@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Phone;
-use App\Form\PhoneType;
 use App\Repository\PhoneRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,68 +12,52 @@ use Symfony\Component\Routing\Annotation\Route;
 //#[Route('/products')]
 class PhoneController extends AbstractController
 {
-    #[Route('/products', name: 'products_index', methods: ['GET'])]
+    #[Route('/phones', name: 'phones_index', methods: ['GET'])]
     public function index(PhoneRepository $phoneRepository): Response
     {
-        return new Response(('HEY PUTAIN CA MARCHE !'));
+        $phones = $phoneRepository->findAll();
+        $data = ['phones' => []];
+
+        foreach ($phones as $phone) {
+            $data['phones'][] = $this->serializePhone($phone);
+        }
+
+        $response = new Response(json_encode($data), 200);
+
+        if (!$phones) {
+            throw $this->createNotFoundException('No user found :/');
+        }
+
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
     }
 
-    /*#[Route('/new', name: 'phone_new', methods: ['GET', 'POST'])]
-    public function new(Request $request): Response
+    #[Route('/phones/{id}', name: '/phones_show', methods: ['GET'])]
+    public function show($id, PhoneRepository $phoneRepository): Response
     {
-        $phone = new Phone();
-        $form = $this->createForm(PhoneType::class, $phone);
-        $form->handleRequest($request);
+        $phone = $phoneRepository->findOneBy(['id' => $id]);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($phone);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('phone_index');
+        if (!$phone) {
+            throw $this->createNotFoundException(sprintf('No phone found for the ID : "%s" :/', $id));
         }
 
-        return $this->render('phone/new.html.twig', [
-            'phone' => $phone,
-            'form' => $form->createView(),
-        ]);
-    }*/
+        $data = $this->serializePhone($phone);
 
-    #[Route('/products/{id}', name: 'products_byId', methods: ['GET'])]
-    public function getProduct(Phone $phone): Response
-    {
-        return $this->render('phone/show.html.twig', [
-            'phone' => $phone,
-        ]);
+        $response = new Response(json_encode($data));
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
     }
 
-    /*#[Route('/{id}/edit', name: 'phone_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Phone $phone): Response
+    private function serializePhone(Phone $phone): array
     {
-        $form = $this->createForm(PhoneType::class, $phone);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
-
-            return $this->redirectToRoute('phone_index');
-        }
-
-        return $this->render('phone/edit.html.twig', [
-            'phone' => $phone,
-            'form' => $form->createView(),
-        ]);
-    }*/
-
-    /*#[Route('/{id}', name: 'phone_delete', methods: ['POST'])]
-    public function delete(Request $request, Phone $phone): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$phone->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->remove($phone);
-            $entityManager->flush();
-        }
-
-        return $this->redirectToRoute('phone_index');
-    }*/
+        return [
+            'id' => $phone->getId(),
+            'sku' => $phone->getSku(),
+            'price' => $phone->getPrice(),
+            'weight' => $phone->getweight(),
+            'height' => $phone->getHeight(),
+            'width' => $phone->getWidth(),
+            'description' => $phone->getDescription()
+        ];
+    }
 }

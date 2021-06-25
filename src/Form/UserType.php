@@ -16,7 +16,8 @@ class UserType extends AbstractType
             ->add('lastName')
             ->add('phoneNumber')
             ->add('emailAddress')
-            ->add('createdAt')
+            ->add('client')
+            ->add('products')
         ;
     }
 

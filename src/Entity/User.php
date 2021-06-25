@@ -41,7 +41,7 @@ class User
     private ?string $emailAddress;
 
     /**
-     * @ORM\Column(type="datetime_immutable")
+     * @ORM\Column(type="datetime")
      */
     private DateTime $createdAt;
 
@@ -54,7 +54,7 @@ class User
     /**
      * @ORM\ManyToMany(targetEntity=Phone::class, mappedBy="user")
      */
-    private ArrayCollection $phones;
+    private $phones;
 
     public function __construct()
     {

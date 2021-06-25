@@ -5,26 +5,40 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\UserType;
 use App\Repository\UserRepository;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/users')]
+//#[Route('/users')]
 class UserController extends AbstractController
 {
-    #[Route('/', name: 'user_index', methods: ['GET'])]
+    #[Route('/users', name: 'user_index', methods: ['GET'])]
     public function index(UserRepository $userRepository): Response
     {
-        return new Response('all users');
+        $users = $userRepository->findAll();
+        $data = ['users' => []];
+
+        foreach ($users as $user) {
+            $data['users'][] = $this->serializeUser($user);
+        }
+
+        $response = new Response(json_encode($data), 200);
+
+        if (!$users) {
+            throw $this->createNotFoundException('No user found :/');
+        }
+
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
     }
 
-    #[Route('/', name: 'user_new', methods: ['POST'])]
-    public function new(Request $request, EntityManager $entityManager): Response
+    #[Route('/users', name: 'user_new', methods: ['POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $body = $request->getContent();
-        $data = json_decode($body);
+        $data = json_decode($body, true);
 
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
@@ -32,46 +46,52 @@ class UserController extends AbstractController
 
         $entityManager->flush();
 
-        $response =  new Response('User added !');
-        $response->headers->set('Location', 'users/'.$user->getId().'');
+        $response = new Response('User added !', 200);
+        $response->headers->set('Location', 'users/' . $user->getId());
+        $response->headers->set('Content-Type', 'application/json');
         return $response;
     }
 
-    #[Route('/{id}', name: 'user_show', methods: ['GET'])]
-    public function show(User $user): Response
+    #[Route('/users/{id}', name: 'user_show', methods: ['GET'])]
+    public function show($id, UserRepository $userRepository): Response
     {
-        return $this->render('user/show.html.twig', [
-            'user' => $user,
-        ]);
+        $user = $userRepository->findOneBy(['id' => $id]);
+
+        if (!$user) {
+            throw $this->createNotFoundException(sprintf('No user found for the ID : "%s" :/', $id));
+        }
+
+        $data = $this->serializeUser($user);
+
+        $response = new Response(json_encode($data), 200);
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
     }
 
     #[Route('/{id}/edit', name: 'user_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, User $user): Response
     {
-        $form = $this->createForm(UserType::class, $user);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
-
-            return $this->redirectToRoute('user_index');
-        }
-
-        return $this->render('user/edit.html.twig', [
-            'user' => $user,
-            'form' => $form->createView(),
-        ]);
+        // SEE FORMS
+        return new Response('WIP');
     }
 
-    #[Route('/{id}', name: 'user_delete', methods: ['DELETE'])]
+    #[Route('/users/{id}', name: 'user_delete', methods: ['DELETE'])]
     public function delete(Request $request, User $user): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->remove($user);
-            $entityManager->flush();
-        }
+        return new Response('WIP');
+    }
 
-        return $this->redirectToRoute('user_index');
+    private function serializeUser(User $user): array
+    {
+        return [
+            'id' => $user->getId(),
+            'firstName' => $user->getFirstName(),
+            'lastName' => $user->getLastName(),
+            'phoneNumber' => $user->getPhoneNumber(),
+            'emailAddress' => $user->getEmailAddress(),
+            'createdAt' => $user->getCreatedAt(),
+            'Client' => $user->getClient()->getBrand(),
+            'Products' => $user->getPhones()
+        ];
     }
 }

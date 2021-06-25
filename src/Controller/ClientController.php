@@ -10,73 +10,41 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/api/client')]
+//#[Route('/client')]
 class ClientController extends AbstractController
 {
-    #[Route('/', name: 'client_index', methods: ['GET'])]
-    public function index(ClientRepository $clientRepository): Response
+    #[Route('/clients/{id}', name: 'clients_show', methods: ['GET'])]
+    public function show($id, ClientRepository $clientRepository): Response
     {
-        return $this->render('client/index.html.twig', [
-            'clients' => $clientRepository->findAll(),
-        ]);
-    }
+        $client = $clientRepository->findOneBy(['id' => $id]);
 
-    #[Route('/new', name: 'client_new', methods: ['GET', 'POST'])]
-    public function new(Request $request): Response
-    {
-        $client = new Client();
-        $form = $this->createForm(ClientType::class, $client);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($client);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('client_index');
+        if (!$client) {
+            throw $this->createNotFoundException(sprintf('No client found for the ID : "%s" :/', $id));
         }
 
-        return $this->render('client/new.html.twig', [
-            'client' => $client,
-            'form' => $form->createView(),
-        ]);
+        $data = $this->serializeClient($client);
+
+        $response = new Response(json_encode($data), 200);
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
     }
 
-    #[Route('/{id}', name: 'client_show', methods: ['GET'])]
-    public function show(Client $client): Response
-    {
-        return $this->render('client/show.html.twig', [
-            'client' => $client,
-        ]);
-    }
-
-    #[Route('/{id}/edit', name: 'client_edit', methods: ['GET', 'POST'])]
+    #[Route('/clients/{id}', name: 'clients_edit', methods: ['POST'])]
     public function edit(Request $request, Client $client): Response
     {
-        $form = $this->createForm(ClientType::class, $client);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
-
-            return $this->redirectToRoute('client_index');
-        }
-
-        return $this->render('client/edit.html.twig', [
-            'client' => $client,
-            'form' => $form->createView(),
-        ]);
+        // SEE FORMS FOR NEW AND EDIT
+        return new Response('WIP');
     }
 
-    #[Route('/{id}', name: 'client_delete', methods: ['POST'])]
-    public function delete(Request $request, Client $client): Response
+    private function serializeClient(Client $client): array
     {
-        if ($this->isCsrfTokenValid('delete'.$client->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->remove($client);
-            $entityManager->flush();
-        }
-
-        return $this->redirectToRoute('client_index');
+        return [
+            'id' => $client->getId(),
+            'brand' => $client->getBrand(),
+            'country' => $client->getCountry(),
+            'phoneNumber' => $client->getPhoneNumber(),
+            'emailAddress' => $client->getEmailAddress(),
+            'createdAt' => $client->getCreatedAt()
+        ];
     }
 }
