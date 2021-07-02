@@ -7,6 +7,7 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
@@ -17,31 +18,37 @@ class User
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups("user:read")
      */
-    private ?int $id;
+    private ?int $id = null;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups("user:read")
      */
     private ?string $firstName;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups("user:read")
      */
     private ?string $lastName;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="string", length=255)
+     * @Groups("user:read")
      */
-    private ?int $phoneNumber;
+    private ?string $phoneNumber;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups("user:read")
      */
     private ?string $emailAddress;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups("user:read")
      */
     private DateTime $createdAt;
 
@@ -51,14 +58,15 @@ class User
      */
     private ?Client $client;
 
+    /*
     /**
      * @ORM\ManyToMany(targetEntity=Phone::class, mappedBy="user")
      */
-    private $phones;
+    //private ArrayCollection $phones;
 
     public function __construct()
     {
-        $this->phones = new ArrayCollection();
+        //$this->phones = new ArrayCollection();
         $this->createdAt = new DateTime();
     }
 
@@ -91,12 +99,12 @@ class User
         return $this;
     }
 
-    public function getPhoneNumber(): ?int
+    public function getPhoneNumber(): ?string
     {
         return $this->phoneNumber;
     }
 
-    public function setPhoneNumber(int $phoneNumber): self
+    public function setPhoneNumber(string $phoneNumber): self
     {
         $this->phoneNumber = $phoneNumber;
 
@@ -139,10 +147,7 @@ class User
         return $this;
     }
 
-    /**
-     * @return Collection|Phone[]
-     */
-    public function getPhones(): Collection
+    /*public function getPhones(): Collection
     {
         return $this->phones;
     }
@@ -164,5 +169,5 @@ class User
         }
 
         return $this;
-    }
+    }*/
 }

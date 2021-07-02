@@ -17,7 +17,7 @@ class Phone
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private ?int $id;
+    private ?int $id = null;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -52,11 +52,11 @@ class Phone
     /**
      * @ORM\ManyToMany(targetEntity=User::class, inversedBy="phones")
      */
-    private $user;
+    //private $user;
 
     public function __construct()
     {
-        $this->user = new ArrayCollection();
+        //$this->user = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -136,10 +136,11 @@ class Phone
         return $this;
     }
 
+    /*
     /**
      * @return Collection|User[]
      */
-    public function getUser(): Collection
+    /*public function getUser(): Collection
     {
         return $this->user;
     }
@@ -158,5 +159,5 @@ class Phone
         $this->user->removeElement($user);
 
         return $this;
-    }
+    }*/
 }

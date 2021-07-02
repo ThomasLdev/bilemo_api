@@ -8,11 +8,19 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
-//#[Route('/products')]
+#[Route('/phones')]
 class PhoneController extends AbstractController
 {
-    #[Route('/phones', name: 'phones_index', methods: ['GET'])]
+    private SerializerInterface $serializer;
+
+    public function __construct(SerializerInterface $serializer)
+    {
+        $this->serializer = $serializer;
+    }
+
+    #[Route('', name: 'phones_index', methods: ['GET'])]
     public function index(PhoneRepository $phoneRepository): Response
     {
         $phones = $phoneRepository->findAll();
@@ -32,7 +40,7 @@ class PhoneController extends AbstractController
         return $response;
     }
 
-    #[Route('/phones/{id}', name: '/phones_show', methods: ['GET'])]
+    #[Route('/{id}', name: '/phones_show', methods: ['GET'])]
     public function show($id, PhoneRepository $phoneRepository): Response
     {
         $phone = $phoneRepository->findOneBy(['id' => $id]);
@@ -46,18 +54,5 @@ class PhoneController extends AbstractController
         $response = new Response(json_encode($data));
         $response->headers->set('Content-Type', 'application/json');
         return $response;
-    }
-
-    private function serializePhone(Phone $phone): array
-    {
-        return [
-            'id' => $phone->getId(),
-            'sku' => $phone->getSku(),
-            'price' => $phone->getPrice(),
-            'weight' => $phone->getweight(),
-            'height' => $phone->getHeight(),
-            'width' => $phone->getWidth(),
-            'description' => $phone->getDescription()
-        ];
     }
 }
