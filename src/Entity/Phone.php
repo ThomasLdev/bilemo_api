@@ -49,15 +49,16 @@ class Phone
      */
     private ?string $description;
 
+    /*
     /**
      * @ORM\ManyToMany(targetEntity=User::class, inversedBy="phones")
      */
     //private $user;
 
-    public function __construct()
+    /*public function __construct()
     {
         //$this->user = new ArrayCollection();
-    }
+    }*/
 
     public function getId(): ?int
     {

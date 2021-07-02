@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 #[Route('/users')]
@@ -25,43 +26,42 @@ class UserController extends AbstractController
     #[Route('', name: 'user_index', methods: ['GET'])]
     public function listAction(UserRepository $userRepository): Response
     {
-        $users = $userRepository->findAll();
-        $json = $this->serializer->serialize($users, 'json', ['groups' => 'user:read']);
-
-        return new Response($json, 200, [
-            "Content-Type" => "application/json"
-        ]);
+        return $this->json($userRepository->findAll(), 200, [], ['groups' => 'user:read']);
     }
 
     #[Route('', name: 'user_new', methods: ['POST'])]
     public function createAction(Request $request, EntityManagerInterface $entityManager, ClientRepository $clientRepository): Response
     {
         $data = $request->getContent();
-        $user = $this->serializer
-            ->deserialize($data, User::class, 'json');
 
-        // Replace with current client later
-        $defaultClient = $clientRepository->findOneBy(['brand' => 'FSR']);
-        $user->setClient($defaultClient);
+        try {
+            $user = $this->serializer
+                ->deserialize($data, User::class, 'json');
 
-        $entityManager->persist($user);
-        $entityManager->flush();
+            // Replace with current client later
+            $defaultClient = $clientRepository->findOneBy(['brand' => 'FSR']);
+            $user->setClient($defaultClient);
 
-        return new Response('', Response::HTTP_CREATED);
+            $entityManager->persist($user);
+            $entityManager->flush();
+
+            return new Response('', Response::HTTP_CREATED);
+
+        } catch(NotEncodableValueException $e) {
+            return $this->json([
+                'status' => 400,
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 
     #[Route('/{id}', name: 'user_show', methods: ['GET'])]
     public function showAction($id, UserRepository $userRepository): Response
     {
-        $user = $userRepository->findOneBy(['id' => $id]);
-        $json = $this->serializer->serialize($user, 'json', ['groups' => 'user:read']);
-
-        return new Response($json, 200, [
-        'Content-Type' => 'application/json'
-        ]);
+        return $this->json($userRepository->findOneBy(['id' => $id]), 200, [], ['groups' => 'user:read']);
     }
 
-    #[Route('/{id}/edit', name: 'user_edit', methods: ['PATCH'])]
+    /*#[Route('/{id}/edit', name: 'user_edit', methods: ['PATCH'])]
     public function editAction(Request $request, User $user): Response
     {
         $data = $request->getContent();
@@ -74,5 +74,5 @@ class UserController extends AbstractController
     public function deleteAction(Request $request, User $user): Response
     {
         return new Response('WIP');
-    }
+    }*/
 }

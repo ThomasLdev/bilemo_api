@@ -55,6 +55,7 @@ class User
     /**
      * @ORM\ManyToOne(targetEntity=Client::class, inversedBy="users")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups("user:read")
      */
     private ?Client $client;
 
