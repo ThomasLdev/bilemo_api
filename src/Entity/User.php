@@ -4,10 +4,9 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use DateTime;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
@@ -25,24 +24,28 @@ class User
     /**
      * @ORM\Column(type="string", length=255)
      * @Groups("user:read")
+     * @Assert\NotBlank(message="First name is mandatory")
      */
     private ?string $firstName;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Groups("user:read")
+     * @Assert\NotBlank(message="Last name is mandatory")
      */
     private ?string $lastName;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Groups("user:read")
+     * @Assert\NotBlank(message="Phone number is mandatory")
      */
     private ?string $phoneNumber;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Groups("user:read")
+     * @Assert\NotBlank(message="Email address is mandatory")
      */
     private ?string $emailAddress;
 
@@ -55,19 +58,12 @@ class User
     /**
      * @ORM\ManyToOne(targetEntity=Client::class, inversedBy="users")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups("user:read")
      */
     private ?Client $client;
 
-    /*
-    /**
-     * @ORM\ManyToMany(targetEntity=Phone::class, mappedBy="user")
-     */
-    //private ArrayCollection $phones;
 
     public function __construct()
     {
-        //$this->phones = new ArrayCollection();
         $this->createdAt = new DateTime();
     }
 
@@ -147,28 +143,4 @@ class User
 
         return $this;
     }
-
-    /*public function getPhones(): Collection
-    {
-        return $this->phones;
-    }
-
-    public function addPhone(Phone $phone): self
-    {
-        if (!$this->phones->contains($phone)) {
-            $this->phones[] = $phone;
-            $phone->addUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removePhone(Phone $phone): self
-    {
-        if ($this->phones->removeElement($phone)) {
-            $phone->removeUser($this);
-        }
-
-        return $this;
-    }*/
 }

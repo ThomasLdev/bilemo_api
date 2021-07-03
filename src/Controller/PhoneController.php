@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Phone;
 use App\Repository\PhoneRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,12 +14,12 @@ class PhoneController extends AbstractController
     #[Route('', name: 'phones_index', methods: ['GET'])]
     public function indexAction(PhoneRepository $phoneRepository): Response
     {
-        return $this->json($phoneRepository->findAll(), 200, []);
+        return $this->json($phoneRepository->findAll(), Response::HTTP_OK, []);
     }
 
     #[Route('/{id}', name: '/phones_show', methods: ['GET'])]
-    public function showAction($id, PhoneRepository $phoneRepository): Response
+    public function showAction(Phone $phone): Response
     {
-        return $this->json($phoneRepository->findOneBy(['id' => $id]), 200, []);
+        return $this->json($phone, Response::HTTP_OK, []);
     }
 }
