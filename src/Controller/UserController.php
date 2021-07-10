@@ -33,9 +33,7 @@ class UserController extends AbstractController
     #[Route('', name: 'user_new', methods: ['POST'])]
     public function createAction(Request $request, ClientRepository $clientRepository): Response
     {
-        $data = $request->getContent();
-        $user = $this->serializer
-            ->deserialize($data, User::class, 'json');
+        $user = $this->processJsonRequestToObject($request);
 
         // Replace with current client later
         $defaultClient = $clientRepository->findOneBy(['brand' => 'FSR']);
@@ -53,11 +51,30 @@ class UserController extends AbstractController
         return $this->json($user, Response::HTTP_OK, [], ['groups' => 'user:read']);
     }
 
-    //WIP
-    /*#[Route('/{id}/edit', name: 'user_edit', methods: ['PATCH'])]
-    public function editAction(Request $request, User $user): Response
+    #[Route('/{id}', name: 'user_edit_put', methods: ['PUT'])]
+    public function editPutAction(Request $request): Response
     {
-    }*/
+        $data = $request->getContent();
+        $user = $this->serializer->deserialize($data, User::class, 'json');
+
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return $this->json($user, Response::HTTP_OK);
+    }
+
+    #[Route('/{id}', name: 'user_edit_patch', methods: ['PATCH'])]
+    public function editPatchAction(Request $request, Int $id, UserRepository $userRepository): Response
+    {
+        $existingUser = $userRepository->findOneBy(['id' => $id]);
+
+        //Comment update le user avec la data envoyée sans form et sans tout hydrater à la main?
+
+        $data = $request->getContent();
+        $user = $this->serializer->deserialize($data, User::class, 'json');
+
+        return new Response('', Response::HTTP_OK);
+    }
 
     #[Route('/{id}', name: 'user_delete', methods: ['DELETE'])]
     public function deleteAction(User $user): Response
@@ -66,5 +83,11 @@ class UserController extends AbstractController
         $this->entityManager->flush();
 
         return new Response(null, Response::HTTP_NO_CONTENT);
+    }
+
+    private function processJsonRequestToObject(Request $request): User
+    {
+        $data = $request->getContent();
+        return $this->serializer->deserialize($data, User::class, 'json');
     }
 }
