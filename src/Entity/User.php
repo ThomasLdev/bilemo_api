@@ -25,6 +25,7 @@ class User
      * @ORM\Column(type="string", length=255)
      * @Groups("user:read")
      * @Assert\NotBlank(message="First name is mandatory")
+     * @Assert\Type(type={"alpha"})
      */
     private ?string $firstName;
 
@@ -32,6 +33,7 @@ class User
      * @ORM\Column(type="string", length=255)
      * @Groups("user:read")
      * @Assert\NotBlank(message="Last name is mandatory")
+     * @Assert\Type(type={"alpha"})
      */
     private ?string $lastName;
 
@@ -39,6 +41,7 @@ class User
      * @ORM\Column(type="string", length=255)
      * @Groups("user:read")
      * @Assert\NotBlank(message="Phone number is mandatory")
+     * @Assert\Type(type={"digit"})
      */
     private ?string $phoneNumber;
 
@@ -46,6 +49,7 @@ class User
      * @ORM\Column(type="string", length=255)
      * @Groups("user:read")
      * @Assert\NotBlank(message="Email address is mandatory")
+     * @Assert\Email(message = "The email '{{ value }}' is not a valid email.")
      */
     private ?string $emailAddress;
 

@@ -10,18 +10,22 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/users')]
 class UserController extends AbstractController
 {
     private SerializerInterface $serializer;
     private EntityManagerInterface $entityManager;
+    private ValidatorInterface $validator;
 
-    public function __construct(SerializerInterface $serializer, EntityManagerInterface $entityManager)
+    public function __construct(SerializerInterface $serializer, EntityManagerInterface $entityManager, ValidatorInterface $validator)
     {
         $this->serializer = $serializer;
         $this->entityManager = $entityManager;
+        $this->validator = $validator;
     }
 
     #[Route('', name: 'user_index', methods: ['GET'])]
@@ -33,13 +37,17 @@ class UserController extends AbstractController
     #[Route('', name: 'user_new', methods: ['POST'])]
     public function createAction(Request $request, ClientRepository $clientRepository): Response
     {
-        $data = $request->getContent();
-        $user = $this->serializer
-            ->deserialize($data, User::class, 'json');
+        $user =  $this->serializer->deserialize($request->getContent(), User::class, 'json');
 
         // Replace with current client later
         $defaultClient = $clientRepository->findOneBy(['brand' => 'FSR']);
         $user->setClient($defaultClient);
+
+        $errors = $this->validator->validate($user);
+
+        if (count($errors) > 0) {
+
+        }
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
@@ -53,11 +61,37 @@ class UserController extends AbstractController
         return $this->json($user, Response::HTTP_OK, [], ['groups' => 'user:read']);
     }
 
-    //WIP
-    /*#[Route('/{id}/edit', name: 'user_edit', methods: ['PATCH'])]
-    public function editAction(Request $request, User $user): Response
+    #[Route('/{id}', name: 'user_edit_put', methods: ['PUT'])]
+    public function updateAction(Request $request, User $user): Response
     {
-    }*/
+        $user = $this->serializer->deserialize($request->getContent(), User::class, 'json', [
+            AbstractNormalizer::OBJECT_TO_POPULATE => $user,
+            'groups' => 'user:write'
+        ]);
+
+        $errors = $this->validator->validate($user);
+
+        if (count($errors) > 0) {
+            // DO SOMETHING COOL
+        }
+
+        $this->entityManager->flush();
+
+        return $this->json($user, Response::HTTP_OK);
+    }
+
+    #[Route('/{id}', name: 'user_edit_patch', methods: ['PATCH'])]
+    public function editPatchAction(Request $request, User $user): Response
+    {
+        $user = $this->serializer->deserialize($request->getContent(), User::class, 'json', [
+            AbstractNormalizer::OBJECT_TO_POPULATE => $user,
+            'groups' => 'user:write'
+        ]);
+
+        $this->entityManager->flush();
+
+        return $this->json($user, Response::HTTP_OK);
+    }
 
     #[Route('/{id}', name: 'user_delete', methods: ['DELETE'])]
     public function deleteAction(User $user): Response
@@ -66,5 +100,10 @@ class UserController extends AbstractController
         $this->entityManager->flush();
 
         return new Response(null, Response::HTTP_NO_CONTENT);
+    }
+
+    private function createValidationErrorResponse($errors)
+    {
+        $apiProblem = new ApiProblem;
     }
 }
