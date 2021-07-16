@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Api\ApiProblem;
+use App\Api\ApiProblemException;
 use App\Entity\User;
 use App\Repository\ClientRepository;
 use App\Repository\UserRepository;
@@ -10,6 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -34,11 +37,23 @@ class UserController extends AbstractController
         return $this->json($userRepository->findAll(), Response::HTTP_OK, [], ['groups' => 'user:read']);
     }
 
+    /**
+     * @throws ApiProblemException
+     */
     #[Route('', name: 'user_new', methods: ['POST'])]
     public function createAction(Request $request, ClientRepository $clientRepository): Response
     {
-        $user =  $this->serializer->deserialize($request->getContent(), User::class, 'json');
+        try {
+            $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
+        } catch (NotEncodableValueException $e) {
+            $apiProblem = new ApiProblem(
+                400,
+                ApiProblem::TYPE_INVALID_REQUEST_BODY_FORMAT,
+            );
+            $apiProblem->set('errors', $e);
 
+            throw new ApiProblemException($apiProblem);
+        }
         // Replace with current client later
         $defaultClient = $clientRepository->findOneBy(['brand' => 'FSR']);
         $user->setClient($defaultClient);
@@ -46,7 +61,7 @@ class UserController extends AbstractController
         $errors = $this->validator->validate($user);
 
         if (count($errors) > 0) {
-
+            $this->throwApiProblemValidationException($errors);
         }
 
         $this->entityManager->persist($user);
@@ -62,22 +77,21 @@ class UserController extends AbstractController
     }
 
     #[Route('/{id}', name: 'user_edit_put', methods: ['PUT'])]
-    public function updateAction(Request $request, User $user): Response
+    public function updateAction(Request $request, User $userExist): Response
     {
-        $user = $this->serializer->deserialize($request->getContent(), User::class, 'json', [
-            AbstractNormalizer::OBJECT_TO_POPULATE => $user,
-            'groups' => 'user:write'
-        ]);
+        $userRequest = $this->serializer->deserialize($request->getContent(), User::class, 'json');
 
-        $errors = $this->validator->validate($user);
+        $errors = $this->validator->validate($userRequest);
 
         if (count($errors) > 0) {
-            // DO SOMETHING COOL
+            return $this->throwApiProblemValidationException($errors);
         }
+
+        $userExist->setEmailAddress($userRequest->getEmailAddress());
 
         $this->entityManager->flush();
 
-        return $this->json($user, Response::HTTP_OK);
+        return $this->json($userRequest, Response::HTTP_OK, [], ['groups' => 'user:read']);
     }
 
     #[Route('/{id}', name: 'user_edit_patch', methods: ['PATCH'])]
@@ -90,7 +104,7 @@ class UserController extends AbstractController
 
         $this->entityManager->flush();
 
-        return $this->json($user, Response::HTTP_OK);
+        return $this->json($user, Response::HTTP_OK, [], ['groups' => 'user:read']);
     }
 
     #[Route('/{id}', name: 'user_delete', methods: ['DELETE'])]
@@ -102,8 +116,15 @@ class UserController extends AbstractController
         return new Response(null, Response::HTTP_NO_CONTENT);
     }
 
-    private function createValidationErrorResponse($errors)
+    private function throwApiProblemValidationException($errors): Response
     {
-        $apiProblem = new ApiProblem;
+        $apiProblem = new ApiProblem(
+            '400',
+            ApiProblem::TYPE_VALIDATION_ERROR
+        );
+
+        $apiProblem->set('errors', $errors);
+
+        throw new ApiProblemException($apiProblem);
     }
 }

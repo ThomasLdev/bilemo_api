@@ -23,7 +23,7 @@ class User
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups("user:read")
+     * @Groups({"user:read", "user:write"})
      * @Assert\NotBlank(message="First name is mandatory")
      * @Assert\Type(type={"alpha"})
      */
@@ -31,7 +31,7 @@ class User
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups("user:read")
+     * @Groups({"user:read", "user:write"})
      * @Assert\NotBlank(message="Last name is mandatory")
      * @Assert\Type(type={"alpha"})
      */
@@ -39,7 +39,7 @@ class User
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups("user:read")
+     * @Groups({"user:read", "user:write"})
      * @Assert\NotBlank(message="Phone number is mandatory")
      * @Assert\Type(type={"digit"})
      */
@@ -47,7 +47,7 @@ class User
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups("user:read")
+     * @Groups({"user:read", "user:write"})
      * @Assert\NotBlank(message="Email address is mandatory")
      * @Assert\Email(message = "The email '{{ value }}' is not a valid email.")
      */

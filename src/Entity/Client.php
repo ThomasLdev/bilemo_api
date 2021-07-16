@@ -48,7 +48,7 @@ class Client
     /**
      * @ORM\OneToMany(targetEntity=User::class, mappedBy="client")
      */
-    private ArrayCollection $users;
+    private Collection $users;
 
     public function __construct()
     {
