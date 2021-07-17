@@ -34,7 +34,7 @@ class ApiProblem
             throw new InvalidArgumentException('No title for type' . $type);
         } else {
             if (!isset(self::$titles[$type])) {
-                throw new \InvalidArgumentException('No title for type '.$type);
+                throw new InvalidArgumentException('No title for type '.$type);
             }
             $title = self::$titles[$type];
         }

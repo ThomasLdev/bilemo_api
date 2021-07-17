@@ -37,12 +37,11 @@ class UserController extends AbstractController
         return $this->json($userRepository->findAll(), Response::HTTP_OK, [], ['groups' => 'user:read']);
     }
 
-    /**
-     * @throws ApiProblemException
-     */
     #[Route('', name: 'user_new', methods: ['POST'])]
     public function createAction(Request $request, ClientRepository $clientRepository): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
         try {
             $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
         } catch (NotEncodableValueException $e) {
@@ -79,7 +78,17 @@ class UserController extends AbstractController
     #[Route('/{id}', name: 'user_edit_put', methods: ['PUT'])]
     public function updateAction(Request $request, User $userExist): Response
     {
-        $userRequest = $this->serializer->deserialize($request->getContent(), User::class, 'json');
+        try {
+            $userRequest = $this->serializer->deserialize($request->getContent(), User::class, 'json');
+        } catch (NotEncodableValueException $e) {
+            $apiProblem = new ApiProblem(
+                400,
+                ApiProblem::TYPE_INVALID_REQUEST_BODY_FORMAT,
+            );
+            $apiProblem->set('errors', $e);
+
+            throw new ApiProblemException($apiProblem);
+        }
 
         $errors = $this->validator->validate($userRequest);
 
@@ -97,10 +106,26 @@ class UserController extends AbstractController
     #[Route('/{id}', name: 'user_edit_patch', methods: ['PATCH'])]
     public function editPatchAction(Request $request, User $user): Response
     {
-        $user = $this->serializer->deserialize($request->getContent(), User::class, 'json', [
-            AbstractNormalizer::OBJECT_TO_POPULATE => $user,
-            'groups' => 'user:write'
-        ]);
+        try {
+            $user = $this->serializer->deserialize($request->getContent(), User::class, 'json', [
+                AbstractNormalizer::OBJECT_TO_POPULATE => $user,
+                'groups' => 'user:write'
+            ]);
+        } catch (NotEncodableValueException $e) {
+            $apiProblem = new ApiProblem(
+                400,
+                ApiProblem::TYPE_INVALID_REQUEST_BODY_FORMAT,
+            );
+            $apiProblem->set('errors', $e);
+
+            throw new ApiProblemException($apiProblem);
+        }
+
+        $errors = $this->validator->validate($user);
+
+        if (count($errors) > 0) {
+            $this->throwApiProblemValidationException($errors);
+        }
 
         $this->entityManager->flush();
 
@@ -123,7 +148,13 @@ class UserController extends AbstractController
             ApiProblem::TYPE_VALIDATION_ERROR
         );
 
-        $apiProblem->set('errors', $errors);
+        $errorsMessage = [];
+
+        foreach ($errors as $error) {
+            $errorsMessage[$error->getPropertyPath()] = $error->getMessage();
+        }
+
+        $apiProblem->set('errors', $errorsMessage);
 
         throw new ApiProblemException($apiProblem);
     }
