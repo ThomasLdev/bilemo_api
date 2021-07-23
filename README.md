@@ -6,6 +6,7 @@ how to install :
 - composer install
 - php bin/console doctrine/migrations/migrate
 - php bin/console doctrine:fixtures:load
+- set your .env.local
 
 how to run : 
 
