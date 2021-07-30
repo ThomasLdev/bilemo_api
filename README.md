@@ -2,7 +2,7 @@
 
 how to install : 
 
-- install symfony 5+
+- install symfony 5+ (php8)
 - composer install
 - php bin/console doctrine/migrations/migrate
 - php bin/console doctrine:fixtures:load
