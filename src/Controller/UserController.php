@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Api\ApiProblem;
 use App\Api\ApiProblemException;
 use App\Entity\User;
+use App\Pagination\PaginationFactory;
 use App\Repository\ClientRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,18 +24,25 @@ class UserController extends AbstractController
     private SerializerInterface $serializer;
     private EntityManagerInterface $entityManager;
     private ValidatorInterface $validator;
+    private PaginationFactory $paginationFactory;
 
-    public function __construct(SerializerInterface $serializer, EntityManagerInterface $entityManager, ValidatorInterface $validator)
+    public function __construct(SerializerInterface $serializer, EntityManagerInterface $entityManager, ValidatorInterface $validator, PaginationFactory $paginationFactory)
     {
         $this->serializer = $serializer;
         $this->entityManager = $entityManager;
         $this->validator = $validator;
+        $this->paginationFactory = $paginationFactory;
     }
 
     #[Route('', name: 'user_index', methods: ['GET'])]
-    public function listAction(UserRepository $userRepository): Response
+    public function listAction(UserRepository $userRepository, Request $request): Response
     {
-        return $this->json($userRepository->findAll(), Response::HTTP_OK, [], ['groups' => 'user:read']);
+        $qb = $userRepository->findAllQueryBuilder();
+
+        $paginatedCollection = $this->paginationFactory
+            ->createCollection($qb, $request, 'user_index');
+
+        return $this->json($paginatedCollection, Response::HTTP_OK, [], ['groups' => 'user:read']);
     }
 
     #[Route('', name: 'user_new', methods: ['POST'])]
@@ -158,4 +166,6 @@ class UserController extends AbstractController
 
         throw new ApiProblemException($apiProblem);
     }
+
+
 }

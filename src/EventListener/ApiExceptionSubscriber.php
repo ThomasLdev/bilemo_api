@@ -12,7 +12,6 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class ApiExceptionSubscriber implements EventSubscriberInterface
 {
-
     public function onKernelException(ExceptionEvent $event)
     {
         $e = $event->getThrowable();

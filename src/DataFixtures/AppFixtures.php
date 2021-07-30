@@ -45,7 +45,6 @@ class AppFixtures extends Fixture
             $user->setEmailAddress(''.$user->getFirstName().'.'.$user->getLastName().'@email.com');
             $user->setPhoneNumber('06'.rand(1, 9).'814253'.rand(1, 9));
             $user->setClient($client);
-            $user->addPhone($phone);
             $manager->persist($user);
         }
 

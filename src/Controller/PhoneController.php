@@ -17,7 +17,7 @@ class PhoneController extends AbstractController
         return $this->json($phoneRepository->findAll(), Response::HTTP_OK, []);
     }
 
-    #[Route('/{id}', name: '/phones_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'phones_show', methods: ['GET'])]
     public function showAction(Phone $phone): Response
     {
         return $this->json($phone, Response::HTTP_OK, []);
