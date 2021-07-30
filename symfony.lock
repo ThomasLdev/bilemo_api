@@ -103,29 +103,11 @@
     "laminas/laminas-code": {
         "version": "4.4.0"
     },
-    "lcobucci/clock": {
-        "version": "2.0.0"
-    },
-    "lcobucci/jwt": {
-        "version": "4.0.3"
-    },
-    "lexik/jwt-authentication-bundle": {
-        "version": "2.5",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "master",
-            "version": "2.5",
-            "ref": "5b2157bcd5778166a5696e42f552ad36529a07a6"
-        },
-        "files": [
-            "./config/packages/lexik_jwt_authentication.yaml"
-        ]
-    },
-    "namshi/jose": {
-        "version": "7.2.3"
-    },
     "nikic/php-parser": {
         "version": "v4.10.5"
+    },
+    "pagerfanta/pagerfanta": {
+        "version": "v3.2.0"
     },
     "phpdocumentor/reflection-common": {
         "version": "2.2.0"
@@ -281,9 +263,6 @@
     "symfony/polyfill-mbstring": {
         "version": "v1.23.0"
     },
-    "symfony/polyfill-php56": {
-        "version": "v1.20.0"
-    },
     "symfony/polyfill-php73": {
         "version": "v1.23.0"
     },
@@ -321,28 +300,10 @@
     "symfony/runtime": {
         "version": "5.4.x-dev"
     },
-    "symfony/security-bundle": {
-        "version": "5.3",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "master",
-            "version": "5.3",
-            "ref": "8b35bfc00a7716db4ca5a764a4b338476ca3a704"
-        },
-        "files": [
-            "./config/packages/security.yaml"
-        ]
-    },
     "symfony/security-core": {
         "version": "5.4.x-dev"
     },
     "symfony/security-csrf": {
-        "version": "5.4.x-dev"
-    },
-    "symfony/security-guard": {
-        "version": "5.4.x-dev"
-    },
-    "symfony/security-http": {
         "version": "5.4.x-dev"
     },
     "symfony/serializer": {
