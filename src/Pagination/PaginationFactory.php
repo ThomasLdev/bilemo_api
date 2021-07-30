@@ -4,6 +4,7 @@
 namespace App\Pagination;
 
 
+use Doctrine\Common\Annotations\Reader;
 use Doctrine\ORM\QueryBuilder;
 use Pagerfanta\Doctrine\ORM\QueryAdapter;
 use Pagerfanta\Pagerfanta;
@@ -12,14 +13,16 @@ use Symfony\Component\Routing\RouterInterface;
 
 class PaginationFactory
 {
-    private $router;
+    private RouterInterface $router;
+    private Reader $annotationReader;
 
-    public function __construct(RouterInterface $router)
+    public function __construct(RouterInterface $router, Reader $annotationReader)
     {
         $this->router = $router;
+        $this->annotationReader = $annotationReader;
     }
 
-    public function createCollection(QueryBuilder $qb, Request $request, String $route, Array $routeParams = [])
+    public function createCollection(QueryBuilder $qb, Request $request, String $route, Array $routeParams = []): PaginatedCollection
     {
         $page = (int)$request->query->get("page", 1);
 
@@ -34,35 +37,28 @@ class PaginationFactory
             $users[] = $user;
         }
 
-        /*$createLinkUrl = function($targetPage) use ($route, $routeParams) {
+        $paginatedCollection = new PaginatedCollection($users, $pagerFanta->getNbResults());
+
+        // make sure query parameters are included in pagination links
+        $routeParams = array_merge($routeParams, $request->query->all());
+
+        $createLinkUrl = function($targetPage) use ($route, $routeParams) {
             return $this->router->generate($route, array_merge(
                 $routeParams,
                 ['page' => $targetPage]
             ));
-        };*/
+        };
 
-        $paginatedCollection = new PaginatedCollection($users, $pagerFanta->getNbResults());
-
-        /*$response = [
-            'items' => $items,
-            'count' => count($items),
-            'total' => $pagerFanta->getNbResults(),
-            'self' => $this->addItemLink('self', $createLinkUrl($page)),
-            'first' => $this->addItemLink('first', $createLinkUrl(1)),
-            'last' => $this->addItemLink('last', $createLinkUrl($pagerFanta->getNbPages()))
-        ];
-
+        $paginatedCollection->addLink('self', $createLinkUrl($page));
+        $paginatedCollection->addLink('first', $createLinkUrl(1));
+        $paginatedCollection->addLink('last', $createLinkUrl($pagerFanta->getNbPages()));
         if ($pagerFanta->hasNextPage()) {
-            $response[] = ['next' => $this->addItemLink('next', $createLinkUrl($pagerFanta->getNextPage()))];
-        } elseif ($pagerFanta->hasPreviousPage()) {
-            $response[] = ['prev' => $this->addItemLink('prev', $createLinkUrl($pagerFanta->getPreviousPage()))];
-        }*/
+            $paginatedCollection->addLink('next', $createLinkUrl($pagerFanta->getNextPage()));
+        }
+        if ($pagerFanta->hasPreviousPage()) {
+            $paginatedCollection->addLink('prev', $createLinkUrl($pagerFanta->getPreviousPage()));
+        }
 
         return $paginatedCollection;
-    }
-
-    public function addItemLink($rel, $url)
-    {
-        return $_links[$rel] = $url;
     }
 }

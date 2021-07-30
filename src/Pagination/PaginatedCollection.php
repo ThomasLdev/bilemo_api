@@ -36,42 +36,32 @@ class PaginatedCollection
         $this->_links[$rel] = $url;
     }
 
-    /**
-     * @return mixed
-     */
+
     public function getItems()
     {
         return $this->items;
     }
 
-    /**
-     * @return mixed
-     */
+
     public function getTotal()
     {
         return $this->total;
     }
 
-    /**
-     * @return int
-     */
-    public function getCount(): int
+
+    public function getCount()
     {
         return $this->count;
     }
 
-    /**
-     * @return array
-     */
-    public function getLinks(): array
+
+    public function getLinks()
     {
         return $this->_links;
     }
 
-    /**
-     * @param array $links
-     */
-    public function setLinks(array $links): void
+
+    public function setLinks(array $links)
     {
         $this->_links = $links;
     }

@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Annotation\Link;
 use App\Repository\UserRepository;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
@@ -10,6 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
+ * @Link("self", route="user_index", params={"id": "object.getId()"})
  */
 class User
 {
