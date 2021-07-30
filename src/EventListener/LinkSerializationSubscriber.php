@@ -12,6 +12,9 @@ use JMS\Serializer\Metadata\StaticPropertyMetadata;
 use ReflectionObject;
 use Symfony\Component\Routing\RouterInterface;
 
+/**
+ * WARNING, THERE IS AN ILLEGAL OFFSET IN THIS CLASS, HAS TO BE FIXED
+ */
 class LinkSerializationSubscriber implements EventSubscriberInterface
 {
     private RouterInterface $router;
@@ -40,6 +43,9 @@ class LinkSerializationSubscriber implements EventSubscriberInterface
                 $links[$annotations->name] = $uri;
             }
         }
+        /**
+         * ILLEGAL OFFSET PROBABLY HERE
+         */
         $visitor->visitProperty(new StaticPropertyMetadata(User::class, '_links.self', $links), $links);
     }
 
@@ -55,3 +61,4 @@ class LinkSerializationSubscriber implements EventSubscriberInterface
         ];
     }
 }
+
