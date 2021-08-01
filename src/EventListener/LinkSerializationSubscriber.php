@@ -46,12 +46,10 @@ class LinkSerializationSubscriber implements EventSubscriberInterface
     public function getSubscribedEvents(): array
     {
         return [
-            [
-                'event' => 'serializer.post_serialize',
-                'method' => 'onPostSerialize',
-                'format' => 'json',
-                'class' => 'App/Entity/User'
-            ]
+            'event' => 'serializer.post_serialize',
+            'method' => 'onPostSerialize',
+            'format' => 'json',
+            'class' => 'App/Entity/User'
         ];
     }
 }
