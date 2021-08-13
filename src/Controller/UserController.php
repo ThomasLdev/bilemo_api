@@ -48,7 +48,7 @@ class UserController extends AbstractController
     #[Route('', name: 'user_new', methods: ['POST'])]
     public function createAction(Request $request, ClientRepository $clientRepository): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_USER');
+        //$this->denyAccessUnlessGranted('ROLE_USER');
 
         try {
             $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
