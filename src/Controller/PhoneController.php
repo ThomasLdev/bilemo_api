@@ -8,7 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/phones')]
+#[Route('/api/phones')]
 class PhoneController extends AbstractController
 {
     #[Route('', name: 'phones_index', methods: ['GET'])]

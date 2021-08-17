@@ -18,7 +18,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[Route('/users')]
+#[Route('/api/users')]
 class UserController extends AbstractController
 {
     private SerializerInterface $serializer;
@@ -48,8 +48,6 @@ class UserController extends AbstractController
     #[Route('', name: 'user_new', methods: ['POST'])]
     public function createAction(Request $request, ClientRepository $clientRepository): Response
     {
-        //$this->denyAccessUnlessGranted('ROLE_USER');
-
         try {
             $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
         } catch (NotEncodableValueException $e) {
@@ -166,6 +164,4 @@ class UserController extends AbstractController
 
         throw new ApiProblemException($apiProblem);
     }
-
-
 }
