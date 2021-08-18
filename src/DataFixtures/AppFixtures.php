@@ -7,9 +7,17 @@ use App\Entity\Phone;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
+    private UserPasswordHasherInterface $hasher;
+
+    public function __construct(UserPasswordHasherInterface $hasher)
+    {
+        $this->hasher = $hasher;
+    }
+
     public function load(ObjectManager $manager)
     {
         $phoneNames = ['Xveria-S3', 'Xveria-S4', 'Xveria-S5', 'Xveria-S8', 'Xveria-A6', 'Xveria-A7'];
@@ -35,6 +43,7 @@ class AppFixtures extends Fixture
             $client->setCountry('FR');
             $client->setPhoneNumber('06'.rand(1, 9).'314983'.rand(1, 9));
             $client->setEmailAddress('commercial@'.$clientName.'.fr');
+            $client->setPassphrase($this->hasher->hashPassword($client,'test1234'));
             $manager->persist($client);
         }
 

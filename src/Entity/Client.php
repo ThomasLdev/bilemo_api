@@ -7,13 +7,13 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 /**
  * @ORM\Entity(repositoryClass=ClientRepository::class)
  * @method string getUserIdentifier()
  */
-class Client implements UserInterface
+class Client implements PasswordAuthenticatedUserInterface
 {
     /**
      * @ORM\Id
@@ -51,6 +51,11 @@ class Client implements UserInterface
      * @ORM\OneToMany(targetEntity=User::class, mappedBy="client")
      */
     private Collection $users;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private ?string $passphrase;
 
     public function __construct()
     {
@@ -158,11 +163,6 @@ class Client implements UserInterface
         // TODO: Implement getRoles() method.
     }
 
-    public function getPassword()
-    {
-        // TODO: Implement getPassword() method.
-    }
-
     public function getSalt()
     {
         // TODO: Implement getSalt() method.
@@ -181,5 +181,22 @@ class Client implements UserInterface
     public function __call(string $name, array $arguments)
     {
         // TODO: Implement @method string getUserIdentifier()
+    }
+
+    public function getPassphrase(): ?string
+    {
+        return $this->passphrase;
+    }
+
+    public function setPassphrase(string $passphrase): self
+    {
+        $this->passphrase = $passphrase;
+
+        return $this;
+    }
+
+    public function getPassword(): ?string
+    {
+        return $this->getPassphrase();
     }
 }
