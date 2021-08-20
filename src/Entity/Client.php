@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\ClientRepository;
-use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -28,24 +27,9 @@ class Client implements PasswordAuthenticatedUserInterface
     private ?string $brand;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="json", length=255)
      */
-    private ?string $country;
-
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private ?int $phoneNumber;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private ?string $emailAddress;
-
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    private ?DateTime $createdAt;
+    private $roles;
 
     /**
      * @ORM\OneToMany(targetEntity=User::class, mappedBy="client")
@@ -60,7 +44,6 @@ class Client implements PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->users = new ArrayCollection();
-        $this->createdAt = new DateTime();
     }
 
     public function getId(): ?int
@@ -76,54 +59,6 @@ class Client implements PasswordAuthenticatedUserInterface
     public function setBrand(string $brand): self
     {
         $this->brand = $brand;
-
-        return $this;
-    }
-
-    public function getCountry(): ?string
-    {
-        return $this->country;
-    }
-
-    public function setCountry(string $country): self
-    {
-        $this->country = $country;
-
-        return $this;
-    }
-
-    public function getPhoneNumber(): ?int
-    {
-        return $this->phoneNumber;
-    }
-
-    public function setPhoneNumber(int $phoneNumber): self
-    {
-        $this->phoneNumber = $phoneNumber;
-
-        return $this;
-    }
-
-    public function getEmailAddress(): ?string
-    {
-        return $this->emailAddress;
-    }
-
-    public function setEmailAddress(string $emailAddress): self
-    {
-        $this->emailAddress = $emailAddress;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(DateTime $createdAt): self
-    {
-        $this->createdAt = $createdAt;
 
         return $this;
     }
@@ -160,7 +95,7 @@ class Client implements PasswordAuthenticatedUserInterface
 
     public function getRoles()
     {
-        // TODO: Implement getRoles() method.
+        return $this->roles;
     }
 
     public function getSalt()
@@ -173,9 +108,9 @@ class Client implements PasswordAuthenticatedUserInterface
         // TODO: Implement eraseCredentials() method.
     }
 
-    public function getUsername()
+    public function getUsername(): ?string
     {
-        // TODO: Implement getUsername() method.
+        return $this->brand;
     }
 
     public function __call(string $name, array $arguments)
