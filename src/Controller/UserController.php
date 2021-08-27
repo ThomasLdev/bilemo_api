@@ -54,7 +54,7 @@ class UserController extends AbstractController
     #[Route('', name: 'user_index', methods: ['GET'])]
     public function listAction(UserRepository $userRepository, Request $request): Response
     {
-        $qb = $userRepository->findAllQueryBuilder();
+        $qb = $userRepository->findUserByClient($this->getUser()->getId());
 
         $paginatedCollection = $this->paginationFactory
             ->createCollection($qb, $request, 'user_index');
