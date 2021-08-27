@@ -8,7 +8,7 @@ use App\Entity\User;
 use App\Pagination\PaginationFactory;
 use App\Repository\ClientRepository;
 use App\Repository\UserRepository;
-use DateTimeImmutable;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -183,7 +183,7 @@ class UserController extends AbstractController
         }
 
         $userExist->setEmailAddress($userRequest->getEmailAddress());
-        $userExist->setUpdatedAt(new DateTimeImmutable());
+        $userExist->setUpdatedAt(new DateTime());
 
         $this->entityManager->flush();
 
@@ -234,7 +234,7 @@ class UserController extends AbstractController
             $this->throwApiProblemValidationException($errors);
         }
 
-        $user->setUpdatedAt(new DateTimeImmutable());
+        $user->setUpdatedAt(new DateTime());
 
         $this->entityManager->flush();
 
