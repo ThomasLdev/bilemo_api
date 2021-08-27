@@ -2,16 +2,18 @@
 
 <h3>Requirements : </h2>
 
-(optionnal)
-- docker
+- (optionnal) Docker : https://docs.docker.com/get-docker/
+- (optionnal) Symfony CLI : https://symfony.com/download
+- composer : https://getcomposer.org/download/
 
 <h3>Install in command lines : </h3>
 
 - git clone git@github.com:ThomasLdev/bilemo_api.git
+- composer install
 - (optionnal) docker-compose up -d
 - symfony serve -d
 - php bin/console doctrine:create:database
-- php bin/console doctrine/migrations/migrate
+- php bin/console doctrine:migrations:migrate
 - php bin/console doctrine:fixtures:load
 
 Note : Using the docker setup, the DATABASE_URL parameter is already set properly in the .env for demo purposes. It would obviously not be the case in a production context
