@@ -79,7 +79,7 @@ class UserController extends AbstractController
      * @Security(name="Bearer")
      */
     #[Route('', name: 'user_new', methods: ['POST'])]
-    public function createAction(Request $request, ClientRepository $clientRepository): Response
+    public function createAction(Request $request): Response
     {
         try {
             $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
@@ -168,7 +168,7 @@ class UserController extends AbstractController
             $userRequest = $this->serializer->deserialize($request->getContent(), User::class, 'json');
         } catch (NotEncodableValueException $e) {
             $apiProblem = new ApiProblem(
-                400,
+                403,
                 ApiProblem::TYPE_INVALID_REQUEST_BODY_FORMAT,
             );
             $apiProblem->set('errors', $e);
@@ -176,18 +176,25 @@ class UserController extends AbstractController
             throw new ApiProblemException($apiProblem);
         }
 
-        $errors = $this->validator->validate($userRequest);
+        if ($userExist->getClient()->getUsername() === $this->getUser()->getUsername()) {
+            $errors = $this->validator->validate($userRequest);
 
-        if (count($errors) > 0) {
-            return $this->throwApiProblemValidationException($errors);
+            if (count($errors) > 0) {
+                return $this->throwApiProblemValidationException($errors);
+            }
+
+            $userExist->setFirstName($userRequest->getFirstName());
+            $userExist->setLastName($userRequest->getLastName());
+            $userExist->setPhoneNumber($userRequest->getPhoneNumber());
+            $userExist->setEmailAddress($userRequest->getEmailAddress());
+            $userExist->setUpdatedAt(new DateTime());
+
+            $this->entityManager->flush();
+
+            return $this->json($userExist, Response::HTTP_OK, [], ['groups' => 'user:read']);
+        } else {
+            $this->throwApiProblemForbiddenRessourceException();
         }
-
-        $userExist->setEmailAddress($userRequest->getEmailAddress());
-        $userExist->setUpdatedAt(new DateTime());
-
-        $this->entityManager->flush();
-
-        return $this->json($userRequest, Response::HTTP_OK, [], ['groups' => 'user:read']);
     }
 
     /**
@@ -213,32 +220,36 @@ class UserController extends AbstractController
     #[Route('/{id}', name: 'user_edit_patch', methods: ['PATCH'])]
     public function editPatchAction(Request $request, User $user): Response
     {
-        try {
-            $user = $this->serializer->deserialize($request->getContent(), User::class, 'json', [
-                AbstractNormalizer::OBJECT_TO_POPULATE => $user,
-                'groups' => 'user:write'
-            ]);
-        } catch (NotEncodableValueException $e) {
-            $apiProblem = new ApiProblem(
-                400,
-                ApiProblem::TYPE_INVALID_REQUEST_BODY_FORMAT,
-            );
-            $apiProblem->set('errors', $e);
+        if ($user->getClient()->getUsername() === $this->getUser()->getUsername()) {
+            try {
+                $user = $this->serializer->deserialize($request->getContent(), User::class, 'json', [
+                    AbstractNormalizer::OBJECT_TO_POPULATE => $user,
+                    'groups' => 'user:write'
+                ]);
+            } catch (NotEncodableValueException $e) {
+                $apiProblem = new ApiProblem(
+                    400,
+                    ApiProblem::TYPE_INVALID_REQUEST_BODY_FORMAT,
+                );
+                $apiProblem->set('errors', $e);
 
-            throw new ApiProblemException($apiProblem);
+                throw new ApiProblemException($apiProblem);
+            }
+
+            $errors = $this->validator->validate($user);
+
+            if (count($errors) > 0) {
+                $this->throwApiProblemValidationException($errors);
+            }
+
+            $user->setUpdatedAt(new DateTime());
+
+            $this->entityManager->flush();
+
+            return $this->json($user, Response::HTTP_OK, [], ['groups' => 'user:read']);
+        } else {
+            $this->throwApiProblemForbiddenRessourceException();
         }
-
-        $errors = $this->validator->validate($user);
-
-        if (count($errors) > 0) {
-            $this->throwApiProblemValidationException($errors);
-        }
-
-        $user->setUpdatedAt(new DateTime());
-
-        $this->entityManager->flush();
-
-        return $this->json($user, Response::HTTP_OK, [], ['groups' => 'user:read']);
     }
 
     /**
@@ -260,10 +271,14 @@ class UserController extends AbstractController
     #[Route('/{id}', name: 'user_delete', methods: ['DELETE'])]
     public function deleteAction(User $user): Response
     {
-        $this->entityManager->remove($user);
-        $this->entityManager->flush();
+        if ($user->getClient()->getUsername() === $this->getUser()->getUsername()) {
+            $this->entityManager->remove($user);
+            $this->entityManager->flush();
 
-        return new Response(null, Response::HTTP_NO_CONTENT);
+            return new Response(null, Response::HTTP_NO_CONTENT);
+        } else {
+            $this->throwApiProblemForbiddenRessourceException();
+        }
     }
 
     private function throwApiProblemValidationException($errors): Response
@@ -281,6 +296,15 @@ class UserController extends AbstractController
 
         $apiProblem->set('errors', $errorsMessage);
 
+        throw new ApiProblemException($apiProblem);
+    }
+
+    private function throwApiProblemForbiddenRessourceException()
+    {
+        $apiProblem = new ApiProblem(
+            403,
+            ApiProblem::TYPE_FORBIDDEN_RESSOURCE,
+        );
         throw new ApiProblemException($apiProblem);
     }
 }
