@@ -7,12 +7,13 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity(repositoryClass=ClientRepository::class)
  * @method string getUserIdentifier()
  */
-class Client implements PasswordAuthenticatedUserInterface
+class Client implements PasswordAuthenticatedUserInterface, UserInterface
 {
     /**
      * @ORM\Id
@@ -29,7 +30,7 @@ class Client implements PasswordAuthenticatedUserInterface
     /**
      * @ORM\Column(type="json", length=255)
      */
-    private $roles;
+    private array $roles = [];
 
     /**
      * @ORM\OneToMany(targetEntity=User::class, mappedBy="client")

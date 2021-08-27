@@ -73,6 +73,7 @@ class UserController extends AbstractController
      *      @OA\Items(ref=@Model(type=User::class, groups={"user:read"}))
      *      )
      * )
+     * @OA\Parameter (name="header")
      * @OA\Tag(name="Users")
      * @Security(name="Bearer")
      */

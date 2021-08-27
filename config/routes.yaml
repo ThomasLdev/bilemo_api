@@ -1,6 +1,5 @@
 api_login_check:
   path: /api/login_check
-  methods: GET
 
 app.swagger_ui:
   path: /api/doc

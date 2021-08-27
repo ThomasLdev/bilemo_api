@@ -3,14 +3,12 @@
 <h3>Requirements : </h2>
 
 - docker
-- composer
-- symfony cli
 
 <h3>Install in command lines : </h3>
 
 - git clone git@github.com:ThomasLdev/bilemo_api.git
 - docker-compose up -d
-- composer install
+- docker exec www_docker_bilemo composer install (run composer inside the containe)
 - symfony serve -d
 - php bin/console doctrine:create:database
 - php bin/console doctrine/migrations/migrate
@@ -34,4 +32,4 @@ To be found <a href="https://localhost:8000/api/doc">here</a>
 
 <h3>UML diagrams</h3>
 
-To be found at the root of the depot in pdf format
+To be found in pdf at the project's root
