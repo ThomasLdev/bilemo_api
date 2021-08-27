@@ -48,6 +48,12 @@ class UserController extends AbstractController
      *      @OA\Items(ref=@Model(type=User::class, groups={"user:read"}))
      *      )
      * )
+     * @OA\Parameter(
+     *     name="page",
+     *     in="query",
+     *     description="Enter a page number if paginated",
+     *     @OA\Schema(type="integer")
+     * )
      * @OA\Tag(name="Users")
      * @Security(name="Bearer")
      */

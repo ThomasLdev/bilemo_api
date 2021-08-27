@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Phone;
+use App\Pagination\PaginationFactory;
 use App\Repository\PhoneRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Annotations as OA;
@@ -25,13 +27,24 @@ class PhoneController extends AbstractController
      *      @OA\Items(ref=@Model(type=Phone::class))
      *      )
      * )
+     * @OA\Parameter(
+     *     name="page",
+     *     in="query",
+     *     description="Enter a page number if paginated",
+     *     @OA\Schema(type="integer")
+     * )
      * @OA\Tag(name="Phones")
      * @Security(name="Bearer")
      */
     #[Route('', name: 'phones_index', methods: ['GET'])]
-    public function indexAction(PhoneRepository $phoneRepository): Response
+    public function indexAction(PhoneRepository $phoneRepository, PaginationFactory $paginationFactory, Request $request): Response
     {
-        return $this->json($phoneRepository->findAll(), Response::HTTP_OK, []);
+        $qb = $phoneRepository->createQueryBuilder('phone');
+
+        $paginatedCollection = $paginationFactory
+            ->createCollection($qb, $request, 'phones_index');
+
+        return $this->json($paginatedCollection, Response::HTTP_OK, []);
     }
 
     /**
