@@ -13,7 +13,7 @@
 - php bin/console doctrine/migrations/migrate
 - php bin/console doctrine:fixtures:load
 
-Note : Using the docker setup, the DATABASE_URL parameter is already set properly in .ENV for demo purposes
+Note : Using the docker setup, the DATABASE_URL parameter is already set properly in .ENV for demo purposes <br />
 <strong>It would not be the case in production context</strong>
 
 <hr>
