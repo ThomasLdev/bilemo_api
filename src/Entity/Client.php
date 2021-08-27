@@ -40,7 +40,7 @@ class Client implements PasswordAuthenticatedUserInterface, UserInterface
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private ?string $passphrase;
+    private ?string $password;
 
     public function __construct()
     {
@@ -94,7 +94,7 @@ class Client implements PasswordAuthenticatedUserInterface, UserInterface
         return $this;
     }
 
-    public function getRoles()
+    public function getRoles(): array
     {
         return $this->roles;
     }
@@ -119,20 +119,15 @@ class Client implements PasswordAuthenticatedUserInterface, UserInterface
         // TODO: Implement @method string getUserIdentifier()
     }
 
-    public function getPassphrase(): ?string
-    {
-        return $this->passphrase;
-    }
-
-    public function setPassphrase(string $passphrase): self
-    {
-        $this->passphrase = $passphrase;
-
-        return $this;
-    }
-
     public function getPassword(): ?string
     {
-        return $this->getPassphrase();
+        return $this->password;
+    }
+
+    public function setPassword(string $password): self
+    {
+        $this->password = $password;
+
+        return $this;
     }
 }
