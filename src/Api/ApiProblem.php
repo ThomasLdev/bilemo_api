@@ -15,13 +15,13 @@ class ApiProblem
         self::TYPE_INVALID_REQUEST_BODY_FORMAT => "Invalid JSON format sent"
     ];
 
-    private ?int $statusCode;
+    private $statusCode;
 
-    private ?string $type;
+    private $type;
 
-    private array $extraData = [];
+    private $extraData = [];
 
-    private ?string $title;
+    private $title;
 
     public function __construct($statusCode, $type = null)
     {
@@ -43,7 +43,7 @@ class ApiProblem
         $this->title = $title;
     }
 
-    public function toArray(): array
+    public function toArray()
     {
         return array_merge(
             $this->extraData,
@@ -55,19 +55,19 @@ class ApiProblem
         );
     }
 
-    public function set($name, $value): self
+    public function set($name, $value)
     {
         $this->extraData[$name] = $value;
 
         return $this;
     }
 
-    public function getStatusCode(): ?int
+    public function getStatusCode()
     {
         return $this->statusCode;
     }
 
-    public function getTitle(): ?string
+    public function getTitle()
     {
         return $this->title;
     }

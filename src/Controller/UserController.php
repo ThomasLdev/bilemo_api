@@ -17,8 +17,11 @@ use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use OpenApi\Annotations as OA;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
 
-#[Route('/users')]
+#[Route('/api/users')]
 class UserController extends AbstractController
 {
     private SerializerInterface $serializer;
@@ -34,6 +37,20 @@ class UserController extends AbstractController
         $this->paginationFactory = $paginationFactory;
     }
 
+    /**
+     * List all customers added by your brand
+     *
+     * @OA\Response(
+     *     response=200,
+     *     description="Returns a list of the customers added by your brand, which is everyone who has already bought a Bilemo product",
+     *     @OA\JsonContent(
+     *      type="array",
+     *      @OA\Items(ref=@Model(type=User::class, groups={"user:read"}))
+     *      )
+     * )
+     * @OA\Tag(name="Users")
+     * @Security(name="Bearer")
+     */
     #[Route('', name: 'user_index', methods: ['GET'])]
     public function listAction(UserRepository $userRepository, Request $request): Response
     {
@@ -45,11 +62,24 @@ class UserController extends AbstractController
         return $this->json($paginatedCollection, Response::HTTP_OK, [], ['groups' => 'user:read']);
     }
 
+    /**
+     * Create a new Bilemo customer
+     *
+     * @OA\Response(
+     *     response=201,
+     *     description="Create a new customer with the data sent in the request",
+     *     @OA\JsonContent(
+     *      type="array",
+     *      @OA\Items(ref=@Model(type=User::class, groups={"user:read"}))
+     *      )
+     * )
+     * @OA\Parameter (name="header")
+     * @OA\Tag(name="Users")
+     * @Security(name="Bearer")
+     */
     #[Route('', name: 'user_new', methods: ['POST'])]
     public function createAction(Request $request, ClientRepository $clientRepository): Response
     {
-        //$this->denyAccessUnlessGranted('ROLE_USER');
-
         try {
             $user = $this->serializer->deserialize($request->getContent(), User::class, 'json');
         } catch (NotEncodableValueException $e) {
@@ -77,12 +107,52 @@ class UserController extends AbstractController
         return new Response('', Response::HTTP_CREATED);
     }
 
+    /**
+     * Return a single customer based on it's id
+     *
+     * @OA\Response(
+     *     response=200,
+     *     description="Returns a single customer retrieved by it's id",
+     *     @OA\JsonContent(
+     *      type="array",
+     *      @OA\Items(ref=@Model(type=User::class, groups={"user:read"}))
+     *      )
+     * )
+     * @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     description="Set the id of the wanted customer",
+     *     @OA\Schema(type="integer")
+     * )
+     * @OA\Tag(name="Users")
+     * @Security(name="Bearer")
+     */
     #[Route('/{id}', name: 'user_show', methods: ['GET'])]
     public function showAction(User $user): Response
     {
         return $this->json($user, Response::HTTP_OK, [], ['groups' => 'user:read']);
     }
 
+    /**
+     * Modify a customer with required data
+     *
+     * @OA\Response(
+     *     response=200,
+     *     description="Modifies a customer by sending all the required data",
+     *     @OA\JsonContent(
+     *      type="array",
+     *      @OA\Items(ref=@Model(type=User::class, groups={"user:read"}))
+     *      )
+     * )
+     * @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     description="Set the id of the wanted customer",
+     *     @OA\Schema(type="integer")
+     * )
+     * @OA\Tag(name="Users")
+     * @Security(name="Bearer")
+     */
     #[Route('/{id}', name: 'user_edit_put', methods: ['PUT'])]
     public function updateAction(Request $request, User $userExist): Response
     {
@@ -111,6 +181,26 @@ class UserController extends AbstractController
         return $this->json($userRequest, Response::HTTP_OK, [], ['groups' => 'user:read']);
     }
 
+    /**
+     * Modify a customer with only the data you need to change
+     *
+     * @OA\Response(
+     *     response=200,
+     *     description="Modifies a customer by sending only one or more of the fields (first name and email only, as an example)",
+     *     @OA\JsonContent(
+     *      type="array",
+     *      @OA\Items(ref=@Model(type=User::class, groups={"user:read"}))
+     *      )
+     * )
+     * @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     description="Set the id of the wanted customer",
+     *     @OA\Schema(type="integer")
+     * )
+     * @OA\Tag(name="Users")
+     * @Security(name="Bearer")
+     */
     #[Route('/{id}', name: 'user_edit_patch', methods: ['PATCH'])]
     public function editPatchAction(Request $request, User $user): Response
     {
@@ -140,6 +230,22 @@ class UserController extends AbstractController
         return $this->json($user, Response::HTTP_OK, [], ['groups' => 'user:read']);
     }
 
+    /**
+     * Remove permanently a customer
+     *
+     * @OA\Response(
+     *     response=204,
+     *     description="Removes permanently a customer from our database"
+     * )
+     * @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     description="Set the id of the wanted customer",
+     *     @OA\Schema(type="integer")
+     * )
+     * @OA\Tag(name="Users")
+     * @Security(name="Bearer")
+     */
     #[Route('/{id}', name: 'user_delete', methods: ['DELETE'])]
     public function deleteAction(User $user): Response
     {
@@ -166,6 +272,4 @@ class UserController extends AbstractController
 
         throw new ApiProblemException($apiProblem);
     }
-
-
 }

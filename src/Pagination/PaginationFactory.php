@@ -4,7 +4,6 @@
 namespace App\Pagination;
 
 
-use Doctrine\Common\Annotations\Reader;
 use Doctrine\ORM\QueryBuilder;
 use Pagerfanta\Doctrine\ORM\QueryAdapter;
 use Pagerfanta\Pagerfanta;
@@ -14,12 +13,10 @@ use Symfony\Component\Routing\RouterInterface;
 class PaginationFactory
 {
     private RouterInterface $router;
-    private Reader $annotationReader;
 
-    public function __construct(RouterInterface $router, Reader $annotationReader)
+    public function __construct(RouterInterface $router)
     {
         $this->router = $router;
-        $this->annotationReader = $annotationReader;
     }
 
     public function createCollection(QueryBuilder $qb, Request $request, String $route, Array $routeParams = []): PaginatedCollection
