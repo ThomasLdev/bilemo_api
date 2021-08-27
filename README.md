@@ -27,7 +27,7 @@ To be found <a href="https://localhost:8000/api/doc">here</a>
 
 <h3>Code quality badge :
 
-<a href="https://codeclimate.com/github/ThomasLdev/bilemo_api/maintainability"><img src="https://api.codeclimate.com/v1/badges/1a1733ff9d290cb2c46e/maintainability" /></a>
+<a href="https://codeclimate.com/github/ThomasLdev/bilemo_api/maintainability" target="_blank"><img src="https://api.codeclimate.com/v1/badges/1a1733ff9d290cb2c46e/maintainability" /></a>
 
 <hr>
 
