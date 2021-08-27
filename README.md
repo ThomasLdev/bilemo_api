@@ -8,13 +8,13 @@
 
 - git clone git@github.com:ThomasLdev/bilemo_api.git
 - docker-compose up -d
-- docker exec www_docker_bilemo composer install (run composer inside the containe)
 - symfony serve -d
 - php bin/console doctrine:create:database
 - php bin/console doctrine/migrations/migrate
 - php bin/console doctrine:fixtures:load
 
-Note : Using the docker setup, the DATABASE_URL parameter is already set properly
+Note : Using the docker setup, the DATABASE_URL parameter is already set properly in .ENV for demo purposes
+<strong>It would not be the case in production context</strong>
 
 <hr>
 
