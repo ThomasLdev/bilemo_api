@@ -20,8 +20,11 @@ class UserRepository extends ServiceEntityRepository
         parent::__construct($registry, User::class);
     }
 
-    public function findAllQueryBuilder(): QueryBuilder
+    public function findUserByClient($client): QueryBuilder
     {
-        return $this->createQueryBuilder('user');
+        return $this->createQueryBuilder('user')
+            ->where('user.client = ?1')
+            ->orderBy('user.createdAt', 'ASC')
+            ->setParameter('1', $client);
     }
 }

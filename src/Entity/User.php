@@ -67,10 +67,17 @@ class User
      */
     private ?Client $client;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     * @Groups("user:read")
+     */
+    private DateTime $updatedAt;
+
 
     public function __construct()
     {
         $this->createdAt = new DateTime();
+        $this->updatedAt = new DateTime();
     }
 
     public function getId(): ?int
@@ -146,6 +153,18 @@ class User
     public function setClient(?Client $client): self
     {
         $this->client = $client;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?DateTime
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?DateTime $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }

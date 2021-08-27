@@ -9,10 +9,12 @@ class ApiProblem
 {
     const TYPE_VALIDATION_ERROR = "validation_error";
     const TYPE_INVALID_REQUEST_BODY_FORMAT = "invalid_body_format";
+    const TYPE_FORBIDDEN_RESSOURCE = "forbidden_ressource";
 
     private static array $titles = [
         self::TYPE_VALIDATION_ERROR => "There was a validation error",
-        self::TYPE_INVALID_REQUEST_BODY_FORMAT => "Invalid JSON format sent"
+        self::TYPE_INVALID_REQUEST_BODY_FORMAT => "Invalid JSON format sent",
+        self::TYPE_FORBIDDEN_RESSOURCE => "The selected user id doesn't belong to your brand. Please change your request"
     ];
 
     private $statusCode;

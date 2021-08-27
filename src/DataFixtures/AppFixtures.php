@@ -39,9 +39,9 @@ class AppFixtures extends Fixture
         foreach($clientNames as $clientName) {
             $client = new Client();
             $client->setBrand($clientName);
-            $client->setPassphrase($this->hasher->hashPassword($client,'test1234'));
+            $client->setPassword($this->hasher->hashPassword($client,'test1234'));
             $manager->persist($client);
-            for($i=0; $i<5; $i++) {
+            for($i=0; $i<10; $i++) {
                 $user = new User();
                 $user->setFirstName(array_rand(array_flip($inputFirstNames)));
                 $user->setLastName(array_rand(array_flip($inputLastNames)));
