@@ -6,7 +6,6 @@ use App\Api\ApiProblem;
 use App\Api\ApiProblemException;
 use App\Entity\User;
 use App\Pagination\PaginationFactory;
-use App\Repository\ClientRepository;
 use App\Repository\UserRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -74,7 +73,6 @@ class UserController extends AbstractController
      *      @OA\Items(ref=@Model(type=User::class, groups={"user:read"}))
      *      )
      * )
-     * @OA\Parameter (name="header")
      * @OA\Tag(name="Users")
      * @Security(name="Bearer")
      */

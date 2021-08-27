@@ -62,7 +62,7 @@ class User
     private DateTime $createdAt;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Client::class, inversedBy="items")
+     * @ORM\ManyToOne(targetEntity=Client::class, inversedBy="user")
      * @ORM\JoinColumn(nullable=false)
      */
     private ?Client $client;
