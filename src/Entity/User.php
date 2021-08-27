@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Annotation\Link;
 use App\Repository\UserRepository;
 use DateTime;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -67,10 +68,16 @@ class User
      */
     private ?Client $client;
 
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private DateTimeImmutable $updatedAt;
+
 
     public function __construct()
     {
         $this->createdAt = new DateTime();
+        $this->updatedAt = new DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -146,6 +153,18 @@ class User
     public function setClient(?Client $client): self
     {
         $this->client = $client;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?DateTimeImmutable $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }

@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Pagination\PaginationFactory;
 use App\Repository\ClientRepository;
 use App\Repository\UserRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -63,11 +64,11 @@ class UserController extends AbstractController
     }
 
     /**
-     * Create a new Bilemo customer
+     * Create a new Bilemo customer linked to the current logged user
      *
      * @OA\Response(
      *     response=201,
-     *     description="Create a new customer with the data sent in the request",
+     *     description="Create a new customer with the data sent in the request. The customer is linked in a manyToOne relation to it's brand.",
      *     @OA\JsonContent(
      *      type="array",
      *      @OA\Items(ref=@Model(type=User::class, groups={"user:read"}))
@@ -91,9 +92,8 @@ class UserController extends AbstractController
 
             throw new ApiProblemException($apiProblem);
         }
-        // Replace with current client later
-        $defaultClient = $clientRepository->findOneBy(['brand' => 'FSR']);
-        $user->setClient($defaultClient);
+
+        $user->setClient($this->getUser());
 
         $errors = $this->validator->validate($user);
 
@@ -130,7 +130,15 @@ class UserController extends AbstractController
     #[Route('/{id}', name: 'user_show', methods: ['GET'])]
     public function showAction(User $user): Response
     {
-        return $this->json($user, Response::HTTP_OK, [], ['groups' => 'user:read']);
+        if ($user->getClient()->getUsername() === $this->getUser()->getUsername()) {
+            return $this->json($user, Response::HTTP_OK, [], ['groups' => 'user:read']);
+        } else {
+            $apiProblem = new ApiProblem(
+                400,
+                ApiProblem::TYPE_FORBIDDEN_RESSOURCE,
+            );
+            throw new ApiProblemException($apiProblem);
+        }
     }
 
     /**
@@ -175,6 +183,7 @@ class UserController extends AbstractController
         }
 
         $userExist->setEmailAddress($userRequest->getEmailAddress());
+        $userExist->setUpdatedAt(new DateTimeImmutable());
 
         $this->entityManager->flush();
 
@@ -224,6 +233,8 @@ class UserController extends AbstractController
         if (count($errors) > 0) {
             $this->throwApiProblemValidationException($errors);
         }
+
+        $user->setUpdatedAt(new DateTimeImmutable());
 
         $this->entityManager->flush();
 
