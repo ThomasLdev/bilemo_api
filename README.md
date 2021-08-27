@@ -2,6 +2,7 @@
 
 <h3>Requirements : </h2>
 
+(optionnal)
 - docker
 
 <h3>Install in command lines : </h3>
