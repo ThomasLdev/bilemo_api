@@ -44,7 +44,7 @@ class PhoneController extends AbstractController
         $paginatedCollection = $paginationFactory
             ->createCollection($qb, $request, 'phones_index');
 
-        return $this->json($paginatedCollection, Response::HTTP_OK, []);
+        return $this->json($paginatedCollection, Response::HTTP_OK, [])->setSharedMaxAge(3600);
     }
 
     /**
@@ -64,6 +64,6 @@ class PhoneController extends AbstractController
     #[Route('/{id}', name: 'phones_show', methods: ['GET'])]
     public function showAction(Phone $phone): Response
     {
-        return $this->json($phone, Response::HTTP_OK, []);
+        return $this->json($phone, Response::HTTP_OK, [])->setSharedMaxAge(3600);
     }
 }
