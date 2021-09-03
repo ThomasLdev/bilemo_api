@@ -5,6 +5,8 @@ services:
     image: mysql:latest
     container_name: db_bilemo
     restart: always
+    ports:
+      - "3306:3306"
     volumes:
       - db-data:/var/lib/mysql
     environment:

@@ -65,7 +65,7 @@ class UserController extends AbstractController
         $paginatedCollection = $this->paginationFactory
             ->createCollection($qb, $request, 'user_index');
 
-        return $this->json($paginatedCollection, Response::HTTP_OK, [], ['groups' => 'user:read']);
+        return$this->json($paginatedCollection, Response::HTTP_OK, [], ['groups' => 'user:read'])->setSharedMaxAge(3600);
     }
 
     /**
@@ -135,7 +135,7 @@ class UserController extends AbstractController
     public function showAction(User $user): Response
     {
         if ($user->getClient()->getUsername() === $this->getUser()->getUsername()) {
-            return $this->json($user, Response::HTTP_OK, [], ['groups' => 'user:read']);
+            return $this->json($user, Response::HTTP_OK, [], ['groups' => 'user:read'])->setSharedMaxAge(3600);
         } else {
             $apiProblem = new ApiProblem(
                 400,
