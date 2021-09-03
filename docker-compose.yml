@@ -11,6 +11,8 @@ services:
       - db-data:/var/lib/mysql
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3306:3306"
     networks:
       - dev
 
@@ -26,18 +28,6 @@ services:
       PMA_HOST: db
     networks:
       - dev
-
-#  www:
-#    build: php
-#    container_name: www_bilemo
-#    ports:
-#      - "8741:80"
-#    volumes:
-#      - ./php/vhosts:/etc/apache2/sites-enabled
-#      - ./:/var/www
-#    restart: always
-#    networks:
-#      - dev
 
 networks:
   dev:

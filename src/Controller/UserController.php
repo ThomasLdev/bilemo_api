@@ -138,7 +138,7 @@ class UserController extends AbstractController
             return $this->json($user, Response::HTTP_OK, [], ['groups' => 'user:read'])->setSharedMaxAge(3600);
         } else {
             $apiProblem = new ApiProblem(
-                400,
+                404,
                 ApiProblem::TYPE_FORBIDDEN_RESSOURCE,
             );
             throw new ApiProblemException($apiProblem);
@@ -172,7 +172,7 @@ class UserController extends AbstractController
             $userRequest = $this->serializer->deserialize($request->getContent(), User::class, 'json');
         } catch (NotEncodableValueException $e) {
             $apiProblem = new ApiProblem(
-                403,
+                Response::HTTP_BAD_REQUEST,
                 ApiProblem::TYPE_INVALID_REQUEST_BODY_FORMAT,
             );
             $apiProblem->set('errors', $e);
@@ -232,7 +232,7 @@ class UserController extends AbstractController
                 ]);
             } catch (NotEncodableValueException $e) {
                 $apiProblem = new ApiProblem(
-                    400,
+                    Response::HTTP_BAD_REQUEST,
                     ApiProblem::TYPE_INVALID_REQUEST_BODY_FORMAT,
                 );
                 $apiProblem->set('errors', $e);
@@ -288,7 +288,7 @@ class UserController extends AbstractController
     private function throwApiProblemValidationException($errors): Response
     {
         $apiProblem = new ApiProblem(
-            '400',
+            Response::HTTP_BAD_REQUEST,
             ApiProblem::TYPE_VALIDATION_ERROR
         );
 
@@ -306,8 +306,8 @@ class UserController extends AbstractController
     private function throwApiProblemForbiddenRessourceException()
     {
         $apiProblem = new ApiProblem(
-            403,
-            ApiProblem::TYPE_FORBIDDEN_RESSOURCE,
+            Response::HTTP_NOT_FOUND,
+            ApiProblem::TYPE_RESSOURCE_NOT_FOUND,
         );
         throw new ApiProblemException($apiProblem);
     }
