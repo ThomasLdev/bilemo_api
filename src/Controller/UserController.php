@@ -21,6 +21,7 @@ use OpenApi\Annotations as OA;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
 
+
 #[Route('/api/users')]
 class UserController extends AbstractController
 {
@@ -48,6 +49,10 @@ class UserController extends AbstractController
      *      @OA\Items(ref=@Model(type=User::class, groups={"user:read"}))
      *      )
      * )
+     * @OA\Response(
+     *     response=404,
+     *     description="Bad url, please check your request",
+     * )
      * @OA\Parameter(
      *     name="page",
      *     in="query",
@@ -65,12 +70,38 @@ class UserController extends AbstractController
         $paginatedCollection = $this->paginationFactory
             ->createCollection($qb, $request, 'user_index');
 
-        return$this->json($paginatedCollection, Response::HTTP_OK, [], ['groups' => 'user:read'])->setSharedMaxAge(3600);
+        return $this->json($paginatedCollection, Response::HTTP_OK, [], ['groups' => 'user:read'])->setSharedMaxAge(3600);
     }
 
     /**
      * Create a new Bilemo customer linked to the current logged user
      *
+     * @OA\RequestBody(
+     *         description="The new User resource",
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/Id+json",
+     *             @OA\Schema(
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="firstName",
+     *                     type="string",
+     *                 ),
+     *                 @OA\Property(
+     *                     property="lastName",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="phoneNumber",
+     *                     type="string"
+     *                 ),
+     *                  @OA\Property(
+     *                     property="emailAddress",
+     *                     type="string"
+     *                 ),
+     *             )
+     *         )
+     * )
      * @OA\Response(
      *     response=201,
      *     description="Create a new customer with the data sent in the request. The customer is linked in a manyToOne relation to it's brand.",
@@ -78,6 +109,14 @@ class UserController extends AbstractController
      *      type="array",
      *      @OA\Items(ref=@Model(type=User::class, groups={"user:read"}))
      *      )
+     * )
+     * @OA\Response(
+     *     response=403,
+     *     description="Acces Denied, you don't have sufficient rights to see or edit this ressource"
+     * )
+     * @OA\Response(
+     *     response=400,
+     *     description="Wrong Json format or Missing Parameter (ex : email or firstName)"
      * )
      * @OA\Tag(name="Users")
      * @Security(name="Bearer")
@@ -122,6 +161,14 @@ class UserController extends AbstractController
      *      @OA\Items(ref=@Model(type=User::class, groups={"user:read"}))
      *      )
      * )
+     * @OA\Response(
+     *     response=404,
+     *     description="No user found for this id"
+     * )
+     * @OA\Response(
+     *     response=403,
+     *     description="Acces Denied, you don't have sufficient rights to see or edit this ressource"
+     * )
      * @OA\Parameter(
      *     name="id",
      *     in="path",
@@ -134,15 +181,9 @@ class UserController extends AbstractController
     #[Route('/{id}', name: 'user_show', methods: ['GET'])]
     public function showAction(User $user): Response
     {
-        if ($user->getClient()->getUsername() === $this->getUser()->getUsername()) {
-            return $this->json($user, Response::HTTP_OK, [], ['groups' => 'user:read'])->setSharedMaxAge(3600);
-        } else {
-            $apiProblem = new ApiProblem(
-                404,
-                ApiProblem::TYPE_FORBIDDEN_RESSOURCE,
-            );
-            throw new ApiProblemException($apiProblem);
-        }
+        $this->denyAccessUnlessGranted('view', $user);
+
+        return $this->json($user, Response::HTTP_OK, [], ['groups' => 'user:read'])->setSharedMaxAge(3600);
     }
 
     /**
@@ -156,18 +197,54 @@ class UserController extends AbstractController
      *      @OA\Items(ref=@Model(type=User::class, groups={"user:read"}))
      *      )
      * )
+     * @OA\Response(
+     *     response=404,
+     *     description="No user found for this id"
+     * )
+     * @OA\Response(
+     *     response=400,
+     *     description="Wrong Json format or Missing Parameter (ex : email or firstName)"
+     * )
      * @OA\Parameter(
      *     name="id",
      *     in="path",
      *     description="Set the id of the wanted customer",
      *     @OA\Schema(type="integer")
      * )
+     * @OA\RequestBody(
+     *         description="The new User resource",
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/Id+json",
+     *             @OA\Schema(
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="firstName",
+     *                     type="string",
+     *                 ),
+     *                 @OA\Property(
+     *                     property="lastName",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="phoneNumber",
+     *                     type="string"
+     *                 ),
+     *                  @OA\Property(
+     *                     property="emailAddress",
+     *                     type="string"
+     *                 ),
+     *             )
+     *         )
+     * )
      * @OA\Tag(name="Users")
      * @Security(name="Bearer")
      */
     #[Route('/{id}', name: 'user_edit_put', methods: ['PUT'])]
-    public function updateAction(Request $request, User $userExist): Response
+    public function updateAction(Request $request, User $user): Response
     {
+        $this->denyAccessUnlessGranted('edit', $user);
+
         try {
             $userRequest = $this->serializer->deserialize($request->getContent(), User::class, 'json');
         } catch (NotEncodableValueException $e) {
@@ -179,26 +256,21 @@ class UserController extends AbstractController
 
             throw new ApiProblemException($apiProblem);
         }
+        $errors = $this->validator->validate($userRequest);
 
-        if ($userExist->getClient()->getUsername() === $this->getUser()->getUsername()) {
-            $errors = $this->validator->validate($userRequest);
-
-            if (count($errors) > 0) {
-                return $this->throwApiProblemValidationException($errors);
-            }
-
-            $userExist->setFirstName($userRequest->getFirstName());
-            $userExist->setLastName($userRequest->getLastName());
-            $userExist->setPhoneNumber($userRequest->getPhoneNumber());
-            $userExist->setEmailAddress($userRequest->getEmailAddress());
-            $userExist->setUpdatedAt(new DateTime());
-
-            $this->entityManager->flush();
-
-            return $this->json($userExist, Response::HTTP_OK, [], ['groups' => 'user:read']);
-        } else {
-            $this->throwApiProblemForbiddenRessourceException();
+        if (count($errors) > 0) {
+            return $this->throwApiProblemValidationException($errors);
         }
+
+        $user->setFirstName($userRequest->getFirstName());
+        $user->setLastName($userRequest->getLastName());
+        $user->setPhoneNumber($userRequest->getPhoneNumber());
+        $user->setEmailAddress($userRequest->getEmailAddress());
+        $user->setUpdatedAt(new DateTime());
+
+        $this->entityManager->flush();
+
+        return $this->json($user, Response::HTTP_OK, [], ['groups' => 'user:read']);
     }
 
     /**
@@ -212,11 +284,49 @@ class UserController extends AbstractController
      *      @OA\Items(ref=@Model(type=User::class, groups={"user:read"}))
      *      )
      * )
+     * @OA\Response(
+     *     response=404,
+     *     description="No user found for this id"
+     * )
+     * @OA\Response(
+     *     response=403,
+     *     description="Acces Denied, you don't have sufficient rights to see or edit this ressource"
+     * )
+     * @OA\Response(
+     *     response=400,
+     *     description="Wrong Json format or Missing Parameter (ex : email or firstName)"
+     * )
      * @OA\Parameter(
      *     name="id",
      *     in="path",
      *     description="Set the id of the wanted customer",
      *     @OA\Schema(type="integer")
+     * )
+     * @OA\RequestBody(
+     *         description="The new User resource",
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/Id+json",
+     *             @OA\Schema(
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="firstName",
+     *                     type="string",
+     *                 ),
+     *                 @OA\Property(
+     *                     property="lastName",
+     *                     type="string"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="phoneNumber",
+     *                     type="string"
+     *                 ),
+     *                  @OA\Property(
+     *                     property="emailAddress",
+     *                     type="string"
+     *                 ),
+     *             )
+     *         )
      * )
      * @OA\Tag(name="Users")
      * @Security(name="Bearer")
@@ -224,36 +334,34 @@ class UserController extends AbstractController
     #[Route('/{id}', name: 'user_edit_patch', methods: ['PATCH'])]
     public function editPatchAction(Request $request, User $user): Response
     {
-        if ($user->getClient()->getUsername() === $this->getUser()->getUsername()) {
-            try {
-                $user = $this->serializer->deserialize($request->getContent(), User::class, 'json', [
-                    AbstractNormalizer::OBJECT_TO_POPULATE => $user,
-                    'groups' => 'user:write'
-                ]);
-            } catch (NotEncodableValueException $e) {
-                $apiProblem = new ApiProblem(
-                    Response::HTTP_BAD_REQUEST,
-                    ApiProblem::TYPE_INVALID_REQUEST_BODY_FORMAT,
-                );
-                $apiProblem->set('errors', $e);
+        $this->denyAccessUnlessGranted('edit', $user);
 
-                throw new ApiProblemException($apiProblem);
-            }
+        try {
+            $user = $this->serializer->deserialize($request->getContent(), User::class, 'json', [
+                AbstractNormalizer::OBJECT_TO_POPULATE => $user,
+                'groups' => 'user:write'
+            ]);
+        } catch (NotEncodableValueException $e) {
+            $apiProblem = new ApiProblem(
+                Response::HTTP_BAD_REQUEST,
+                ApiProblem::TYPE_INVALID_REQUEST_BODY_FORMAT,
+            );
+            $apiProblem->set('errors', $e);
 
-            $errors = $this->validator->validate($user);
-
-            if (count($errors) > 0) {
-                $this->throwApiProblemValidationException($errors);
-            }
-
-            $user->setUpdatedAt(new DateTime());
-
-            $this->entityManager->flush();
-
-            return $this->json($user, Response::HTTP_OK, [], ['groups' => 'user:read']);
-        } else {
-            $this->throwApiProblemForbiddenRessourceException();
+            throw new ApiProblemException($apiProblem);
         }
+
+        $errors = $this->validator->validate($user);
+
+        if (count($errors) > 0) {
+            $this->throwApiProblemValidationException($errors);
+        }
+
+        $user->setUpdatedAt(new DateTime());
+
+        $this->entityManager->flush();
+
+        return $this->json($user, Response::HTTP_OK, [], ['groups' => 'user:read']);
     }
 
     /**
@@ -262,6 +370,14 @@ class UserController extends AbstractController
      * @OA\Response(
      *     response=204,
      *     description="Removes permanently a customer from our database"
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="No user found for this id"
+     * )
+     * @OA\Response(
+     *     response=403,
+     *     description="Acces Denied, you don't have sufficient rights to see or edit this ressource"
      * )
      * @OA\Parameter(
      *     name="id",
@@ -275,14 +391,11 @@ class UserController extends AbstractController
     #[Route('/{id}', name: 'user_delete', methods: ['DELETE'])]
     public function deleteAction(User $user): Response
     {
-        if ($user->getClient()->getUsername() === $this->getUser()->getUsername()) {
-            $this->entityManager->remove($user);
-            $this->entityManager->flush();
+        $this->denyAccessUnlessGranted('edit', $user);
 
-            return new Response(null, Response::HTTP_NO_CONTENT);
-        } else {
-            $this->throwApiProblemForbiddenRessourceException();
-        }
+        $this->entityManager->remove($user);
+        $this->entityManager->flush();
+        return new Response(null, Response::HTTP_NO_CONTENT);
     }
 
     private function throwApiProblemValidationException($errors): Response
@@ -300,15 +413,6 @@ class UserController extends AbstractController
 
         $apiProblem->set('errors', $errorsMessage);
 
-        throw new ApiProblemException($apiProblem);
-    }
-
-    private function throwApiProblemForbiddenRessourceException()
-    {
-        $apiProblem = new ApiProblem(
-            Response::HTTP_NOT_FOUND,
-            ApiProblem::TYPE_RESSOURCE_NOT_FOUND,
-        );
         throw new ApiProblemException($apiProblem);
     }
 }
