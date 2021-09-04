@@ -13,6 +13,12 @@ use OpenApi\Annotations as OA;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
 
+/**
+ * @OA\Response(
+ *     response=401,
+ *     description="No token found, or expired token"
+ * )
+ */
 #[Route('/api/phones')]
 class PhoneController extends AbstractController
 {
@@ -48,15 +54,19 @@ class PhoneController extends AbstractController
     }
 
     /**
-     * List all phones available for sale
+     * Returns the wanted phone selected by id
      *
      * @OA\Response(
      *     response=200,
-     *     description="Returns a list of the available phones for sale right now. Futur products are not included",
+     *     description="Returns a single phone based on the request id",
      *     @OA\JsonContent(
      *      type="array",
      *      @OA\Items(ref=@Model(type=Phone::class))
      *      )
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="Bad url or unknown id",
      * )
      * @OA\Tag(name="Phones")
      * @Security(name="Bearer")

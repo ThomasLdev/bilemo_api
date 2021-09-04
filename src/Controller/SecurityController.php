@@ -10,11 +10,19 @@ use OpenApi\Annotations as OA;
 class SecurityController extends AbstractController
 {
     /**
-     * List all customers added by your brand
+     * Returns a JWT token
      *
      * @OA\Response(
      *     response=200,
-     *     description="Returns a list of the customers added by your brand, which is everyone who has already bought a Bilemo product"
+     *     description="Returns a JWT token with 3600 expiration time. Required for any request"
+     * )
+     * @OA\Response(
+     *     response=401,
+     *     description="Credientials are incorrect"
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="Bad Json format triggering a bad request"
      * )
      * @OA\RequestBody(
      *         description="The new User resource",
@@ -22,14 +30,13 @@ class SecurityController extends AbstractController
      *         @OA\MediaType(
      *             mediaType="application/Id+json",
      *             @OA\Schema(
-     *                 type="object",
-     *                 @OA\Property(
-     *                     property="brand",
+     *                 type="array",
+     *                 format="json",
+     *                 @OA\Items(
      *                     type="string",
      *                 ),
-     *                 @OA\Property(
-     *                     property="password",
-     *                     type="string"
+     *                  @OA\Items(
+     *                  type="string",
      *                 )
      *             )
      *         )

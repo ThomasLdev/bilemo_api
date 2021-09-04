@@ -21,7 +21,12 @@ use OpenApi\Annotations as OA;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
 
-
+/**
+ * @OA\Response(
+ *     response=401,
+ *     description="No token found, or expired token"
+ * )
+ */
 #[Route('/api/users')]
 class UserController extends AbstractController
 {
