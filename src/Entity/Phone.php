@@ -2,11 +2,13 @@
 
 namespace App\Entity;
 
+use App\Annotation\Link;
 use App\Repository\PhoneRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass=PhoneRepository::class)
+ * @Link("self", route="phone_index", params={"id": "object.getId()"})
  */
 class Phone
 {
