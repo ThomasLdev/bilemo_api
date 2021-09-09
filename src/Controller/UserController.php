@@ -116,10 +116,6 @@ class UserController extends AbstractController
      *      )
      * )
      * @OA\Response(
-     *     response=403,
-     *     description="Acces Denied, you don't have sufficient rights to see or edit this ressource"
-     * )
-     * @OA\Response(
      *     response=400,
      *     description="Wrong Json format or Missing Parameter (ex : email or firstName)"
      * )
